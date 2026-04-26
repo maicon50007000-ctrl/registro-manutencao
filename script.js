@@ -3,85 +3,88 @@ let atual = null;
 let editando = false;
 
 function salvar() {
-	const item = {
-		componente: document.getElementById('componente').value,
-		bancada: document.getElementById('bancada').value,
-		restaurado: document.getElementById('restaurado').value,
-		data: document.getElementById('data').value,
-		problema: document.getElementById('problema').value,
-		urgencia: document.getElementById('urgencia').value
-	};
+    // Check if form exists (Admin only)
+    if (!document.getElementById('componente')) return;
 
-	if (editando) {
-		dados[atual] = item;
-		editando = false;
-	} else {
-		dados.push(item);
-	}
+    const item = {
+        componente: document.getElementById('componente').value,
+        bancada: document.getElementById('bancada').value,
+        restaurado: document.getElementById('restaurado').value,
+        data: document.getElementById('data').value,
+        problema: document.getElementById('problema').value,
+        urgencia: document.getElementById('urgencia').value
+    };
 
-	localStorage.setItem('dados', JSON.stringify(dados));
-	render();
-	abrir(dados.length - 1);
+    if (editando) {
+        dados[atual] = item;
+        editando = false;
+    } else {
+        dados.push(item);
+    }
+
+    localStorage.setItem('dados', JSON.stringify(dados));
+    render();
+    fechar();
 }
 
 function render() {
-	const lista = document.getElementById('lista');
-	lista.innerHTML = '';
+    const lista = document.getElementById('lista');
+    if (!lista) return;
+    lista.innerHTML = '<h2>Status de Manutenção</h2>';
 
-	dados.forEach((d, i) => {
-		const div = document.createElement('div');
+    dados.forEach((d, i) => {
+        const div = document.createElement('div');
+        let classe = 'card urgencia-' + d.urgencia;
+        if (d.restaurado === 'sim') classe = 'card restaurado';
 
-		let classe = 'card urgencia-' + d.urgencia;
-		if (d.restaurado === 'sim') {
-			classe = 'card restaurado';
-		}
+        div.className = classe;
+        let label = d.restaurado === 'sim' ? '✔ Restaurado' : d.urgencia;
 
-		div.className = classe;
-
-		let label = d.restaurado === 'sim' ? '✔ Restaurado' : d.urgencia;
-
-		div.innerHTML = `${d.componente} <span>${label}</span>`;
-		div.onclick = () => abrir(i);
-		lista.appendChild(div);
-	});
+        div.innerHTML = `${d.componente} <span>${label}</span>`;
+        div.onclick = () => abrir(i);
+        lista.appendChild(div);
+    });
 }
 
 function abrir(i) {
-	atual = i;
-	const d = dados[i];
-
-	document.getElementById('mComp').innerText = d.componente;
-	document.getElementById('mDados').innerText = 
-	      `Bancada: ${d.bancada}
-	      ${d.restaurado === 'sim' ? 'Status: Restaurado\n' : ''}Data: ${d.data}
-	      Problema: ${d.problema}
-	      Urgência: ${d.urgencia}`;
-	document.getElementById('modal').style.display = 'flex';
+    atual = i;
+    const d = dados[i];
+    document.getElementById('mComp').innerText = d.componente;
+    document.getElementById('mDados').innerText = 
+          `Bancada: ${d.bancada}\n` +
+          `${d.restaurado === 'sim' ? 'Status: Restaurado\n' : ''}` +
+          `Data: ${d.data}\n` +
+          `Problema: ${d.problema}\n` +
+          `Urgência: ${d.urgencia}`;
+    document.getElementById('modal').style.display = 'flex';
 }
 
 function fechar() {
-	document.getElementById('modal').style.display = 'none';
+    document.getElementById('modal').style.display = 'none';
 }
 
 function excluir() {
-	dados.splice(atual,1);
-	localStorage.setItem('dados', JSON.stringify(dados));
-	fechar();
-	render();
+    if (confirm("Deseja realmente excluir?")) {
+        dados.splice(atual, 1);
+        localStorage.setItem('dados', JSON.stringify(dados));
+        fechar();
+        render();
+    }
 }
 
 function editar() {
-	const d = dados[atual];
-
-	document.getElementById('componente').value = d.componente;
-	document.getElementById('bancada').value = d.bancada;
-	document.getElementById('restaurado').value = d.restaurado;
-	document.getElementById('data').value = d.data;
-	document.getElementById('problema').value = d.problema;
-	document.getElementById('urgencia').value = d.urgencia;
-
-	editando = true;
-	fechar();
+    const d = dados[atual];
+    // Fill form only if it exists
+    if (document.getElementById('componente')) {
+        document.getElementById('componente').value = d.componente;
+        document.getElementById('bancada').value = d.bancada;
+        document.getElementById('restaurado').value = d.restaurado;
+        document.getElementById('data').value = d.data;
+        document.getElementById('problema').value = d.problema;
+        document.getElementById('urgencia').value = d.urgencia;
+        editando = true;
+        fechar();
+    }
 }
 
 render();
