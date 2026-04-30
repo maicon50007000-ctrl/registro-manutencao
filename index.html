@@ -74,5 +74,36 @@
 
         render();
     </script>
+    <!-- Add this before your script -->
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+	<script>
+	    // Replace with your project details from Supabase settings
+	    const SUPABASE_URL = 'https://your-project-id.supabase.co';
+	    const SUPABASE_KEY = 'your-anon-public-key';
+	    const supabase = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+	    async function render() {
+		// Fetch from cloud instead of localStorage
+		const { data: dados, error } = await supabase
+		    .from('manutencao')
+		    .select('*')
+		    .order('created_at', { ascending: false });
+
+		if (error) return console.error(error);
+
+		const lista = document.getElementById('lista');
+		lista.innerHTML = '<h2>Status de Manutenção</h2>';
+
+		dados.forEach((d) => {
+		    const div = document.createElement('div');
+		    div.className = d.restaurado === 'sim' ? 'card restaurado' : 'card urgencia-' + d.urgencia;
+		    div.innerHTML = `${d.componente} <span>${d.restaurado === 'sim' ? '✔' : d.urgencia}</span>`;
+		    div.onclick = () => abrir(d);
+		    lista.appendChild(div);
+		});
+	    }
+	    render();
+	</script>
 </body>
 </html>

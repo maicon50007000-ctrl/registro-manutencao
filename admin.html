@@ -66,27 +66,28 @@
         let atual = null;
         let editando = false;
 
-        function salvar() {
-            const item = {
-                componente: document.getElementById('componente').value,
-                bancada: document.getElementById('bancada').value,
-                restaurado: document.getElementById('restaurado').value,
-                data: document.getElementById('data').value,
-                problema: document.getElementById('problema').value,
-                urgencia: document.getElementById('urgencia').value
-            };
+	async function salvar() {
+	    const item = {
+		componente: document.getElementById('componente').value,
+		bancada: document.getElementById('bancada').value,
+		restaurado: document.getElementById('restaurado').value,
+		data: document.getElementById('data').value,
+		problema: document.getElementById('problema').value,
+		urgencia: document.getElementById('urgencia').value
+	    };
 
-            if (editando) {
-                dados[atual] = item;
-                editando = false;
-            } else {
-                dados.push(item);
-            }
+	    if (editando) {
+		// Update cloud record
+		await supabase.from('manutencao').update(item).eq('id', dados[atual].id);
+		editando = false;
+	    } else {
+		// Insert new cloud record
+		await supabase.from('manutencao').insert([item]);
+	    }
 
-            localStorage.setItem('dados', JSON.stringify(dados));
-            limparCampos();
-            render();
-        }
+	    limparCampos();
+	    render(); // Refresh list from cloud
+	}
 
         function render() {
             const lista = document.getElementById('lista');
